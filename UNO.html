@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link href="UNO.css" rel="stylesheet">
+	<meta charset="utf-8">
+
+	<title>UNO</title>
+
+	<script src="http://code.jquery.com/jquery-2.0.0.js"></script>
+</head>
+<body>
+  <h1 style='display: auto;' id='uno'>UNO</h1>
+  <img id="back" style="display: none;" class="colode" src="UNO_back.png" alt="">
+  <button id="button" style='display: auto;' type="button" onclick="play()" name="button">PLAY</button>
+
+  <script type="text/javascript">
+    function shuffle(array) {
+      array.sort(() => Math.random() - 0.5);
+    }
+    let players = {
+      bot_one: [],
+      bot_two: [],
+      bot_three: [],
+      player: []
+    }
+    let playerView = []
+    let zin = 1
+    var second_colode = []
+    let colode = [{color: 'red', num: '0'}, {color: 'red', num: '1'}, {color: 'red', num: '2'}, {color: 'red', num: '3'}, {color: 'red', num: '4'}, {color: 'red', num: '5'}, {color: 'red', num: '6'}, {color: 'red', num: '7'}, {color: 'red', num: '8'}, {color: 'red', num: '9'}, {color: 'red', num: 'STOP'}, {color: 'red', num: 'REVERSE'}, {color: 'red', num: '+2'}, {color: 'blue', num: '0'}, {color: 'blue', num: '1'}, {color: 'blue', num: '2'}, {color: 'blue', num: '3'}, {color: 'blue', num: '4'}, {color: 'blue', num: '5'}, {color: 'blue', num: '6'}, {color: 'blue', num: '7'}, {color: 'blue', num: '8'}, {color: 'blue', num: '9'}, {color: 'blue', num: 'STOP'}, {color: 'blue', num: 'REVERSE'}, {color: 'blue', num: '+2'}, {color: 'yellow', num: '0'}, {color: 'yellow', num: '1'}, {color: 'yellow', num: '2'}, {color: 'yellow', num: '3'}, {color: 'yellow', num: '4'}, {color: 'yellow', num: '5'}, {color: 'yellow', num: '6'}, {color: 'yellow', num: '7'}, {color: 'yellow', num: '8'}, {color: 'yellow', num: '9'}, {color: 'yellow', num: 'STOP'}, {color: 'yellow', num: 'REVERSE'}, {color: 'yellow', num: '+2'}, {color: 'green', num: '0'}, {color: 'green', num: '1'}, {color: 'green', num: '2'}, {color: 'green', num: '3'}, {color: 'green', num: '4'}, {color: 'green', num: '5'}, {color: 'green', num: '6'}, {color: 'green', num: '7'}, {color: 'green', num: '8'}, {color: 'green', num: '9'}, {color: 'green', num: 'STOP'}, {color: 'green', num: 'REVERSE'}, {color: 'green', num: '+2'}, {color: 'black', num: '+4'}, {color: 'black', num: 'CANGE'}, {color: 'black', num: '+4_2'}, {color: 'black', num: 'CANGE_2'}, {color: 'black', num: '+4_3'}, {color: 'black', num: 'CANGE_3'}, {color: 'black', num: '+4_4'}, {color: 'black', num: 'CANGE_4'}]
+    function play() {
+
+
+      shuffle(colode)
+
+      $('#uno').attr('style', 'display: none;')
+      $('#button').attr('style', 'display: none;')
+      $('#back').attr('style', '')
+
+      let bot1 = 800 / 7 / 19.2
+      let bot1pl = 550 / 19.2
+      for (let i = 0; i < 7; i++) {
+        $('body').append('<img id="UNO_' + colode[i].color + "_" + colode[i].num + '" style="transform: rotate(180deg); top: -9vh; left: ' + bot1pl + 'vw;" src="UNO_back.png" alt="">')
+        players.bot_one.push(colode[i])
+        colode.shift()
+        bot1pl += bot1
+      }
+
+      let bot2 = 600 / 7 / 10.8
+      let bot2pl = 150 / 10.8
+      for (let i = 0; i < 7; i++) {
+        $('body').append('<img id="UNO_' + colode[i].color + "_" + colode[i].num + '" style="transform: rotate(270deg); top: ' + bot2pl + 'vh; left: 96vw;" src="UNO_back.png" alt="">')
+        players.bot_two.push(colode[i])
+        colode.shift()
+        bot2pl += bot2
+      }
+
+      let bot3 = 600 / 7 / 10.8
+      let bot3pl = 150 / 10.8
+      for (let i = 0; i < 7; i++) {
+        $('body').append('<img id="UNO_' + colode[i].color + "_" + colode[i].num + '" style="transform: rotate(90deg); top: ' + bot3pl + 'vh; left: -3vw;" src="UNO_back.png" alt="">')
+        players.bot_three.push(colode[i])
+        colode.shift()
+        bot3pl += bot3
+      }
+      let player = 1300 / 7 / 19.2
+      let playerpl = 300 / 19.2
+      for (let i = 0; i < 7; i++) {
+        $('body').append('<img id="' + i + '" class="player" onclick="playCard(' + i + ')" style="transform: rotate( 0deg); left: ' + playerpl + 'vw;" src="UNO_' + colode[i].color + "_" + colode[i].num + '.png" alt="">')
+        players.player.push(colode[i])
+        colode.shift()
+        playerpl += player
+        playerView.push(i)
+      }
+
+      $('body').append('<img id="play" style=" width: 8.2vw; top: 32vh; left: 40vw;"  src="UNO_' + colode[0].color + "_" + colode[0].num + '.png" alt="">')
+      second_colode.push(colode[0])
+      colode.unshift()
+      activeCard = second_colode[0]
+      playerH()
+    }
+    function playCard(i) {
+      if (playerHod == true){
+      	if (activeCard.color == 'black'){
+      		playerHod = false
+          activeCard = second_colode[second_colode.length]
+	        $("#" + i).attr('style', "z-index:" + zin + "; width: 8.2vw; top: 32vh; left: 40vw;")
+	        $("#" + i).attr('class', "")
+	        $("#" + i).attr('id', players.player[i].color + "_" + players.player[i].num)
+	        zin++
+	        second_colode.push(players.player)
+	        players.player.splice(i, 1)
+	        playerView.splice(i, 1)
+	        for (let a = 0; a < players.player.length; a++){
+            $("#" + a).attr('id', a - 1)
+            $("#" + a).attr('onclick', "playCard(" + a - 1 + ")")
+	        }
+	        let player2 = 1300 / players.player.length / 19.2
+	        let playerpl2 = 300 / 19.2
+	        for (let a = 0; a < players.player.length; a++){
+	          $('#' + a).attr('style', "transform: rotate(0deg); left: " + playerpl2 + "vw;")
+	          playerpl2 += player2
+	        }
+	        playerHod = false
+      	}
+        else if (players.player[i].color == activeCard.color || players.player[i].color == "black" || players.player[i].num == activeCard.num){
+        	activeCard = second_colode[second_colode.length]
+	        $("#" + i).attr('style', "z-index:" + zin + "; width: 8.2vw; top: 32vh; left: 40vw;")
+	        $("#" + i).attr('class', "")
+	        $("#" + i).attr('id', players.player[i].color + "_" + players.player[i].num)
+	        zin++
+	        second_colode.push(players.player)
+	        players.player.splice(i, 1)
+	        playerView.splice(i, 1)
+	        for (let a = i; a < players.player.length; a++){
+	          $("#" + a).attr('id', a - 1)
+            $("#" + a).attr('onclick', "playCard(" + a - 1 + ")")
+	        }
+	        let player2 = 1300 / players.player.length / 19.2
+	        let playerpl2 = 300 / 19.2
+	        for (let a = 0; a < players.player.length; a++){
+	          $('#' + a).attr('style', "transform: rotate(0deg); z-index: " + zin + "; left: " + playerpl2 + "vw;")
+	          playerpl2 += player2
+            zin++
+	        }
+	        playerHod = false
+        }
+
+      }
+    }
+    let playerPlace = 1
+    let playerNum = 7
+    let playerHod = false
+    let way = ["player", "bot_three", "bot_one", "bot_two"]
+    function playerH() {
+      playerHod = true
+      alert("Ваш ход")
+      if (activeCard.num == "+2"){
+      		let player = 1300 / (players.player.length + 2) / 19.2
+      		let playerpl = 300 / 19.2
+          let len =  players.player.length
+      		for (let i = 0; i < 2; i++){
+      			players.player.push(colode[i])
+      			$('body').append('<img id="' + (len + i) + '" class="player" onclick="playCard(' + (len + i) + ')" style="transform: rotate(0deg); left: ' + playerpl + 'vw;" src="UNO_' + colode[i].color + "_" + colode[i].num + '.png" alt="">')
+      			colode.shift()
+      			playerpl += player
+      			playerView.push(playerView[playerView.length])
+      		}
+      		let player2 = 1300 / players.player.length / 19.2
+	        let playerpl2 = 300 / 19.2
+	        for (let a = 0; a < players.player.length; a++){
+	          $('#' + a).attr('style', "z-index: " + zin + "; transform: rotate(0deg); left: " + playerpl2 + "vw;")
+	          playerpl2 += player2
+	          zin++
+ 	        }
+      	}
+      	else if (activeCard.num[0] + activeCard.num[1]== "+4"){
+          let player = 1300 / (players.player.length + 2) / 19.2
+      		let playerpl = 300 / 19.2
+          let len =  players.player.length
+      		for (let i = 0; i < 4; i++){
+      			players.player.push(colode[i])
+      			$('body').append('<img id="' + (len + i) + '" class="player" onclick="playCard(' + (len + i) + ')" style="transform: rotate(0deg); left: ' + playerpl + 'vw;" src="UNO_' + colode[i].color + "_" + colode[i].num + '.png" alt="">')
+      			colode.shift()
+      			playerpl += player
+      			playerView.push(playerView[playerView.length])
+      		}
+      		let player2 = 1300 / players.player.length / 19.2
+	        let playerpl2 = 300 / 19.2
+	        for (let a = 0; a < players.player.length; a++){
+	          $('#' + a).attr('style', "z-index: " + zin + "; transform: rotate(0deg); left: " + playerpl2 + "vw;")
+	          playerpl2 += player2
+	          zin++
+ 	        }
+      	}
+      	else if (activeCard.num == "STOP"){
+      		playerHod = false
+      		// bot_three()
+      	}
+    }
+  </script>
+</body>
+</html>

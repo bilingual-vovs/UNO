@@ -1,0 +1,53 @@
+body{
+    background-color: #ABEDD1;
+}
+::-webkit-scrollbar{
+  display: none;
+}
+*{
+  transition-duration: 500ms;
+}
+img{
+  position: absolute;
+  width: 7vw;
+}
+.colode{
+  width: 8vw;
+  position: absolute;
+  top: 32vh;
+  left: 50vw;
+}
+.player{
+  width: 10vw;
+  top: 80vh;
+}
+.player:hover{
+  top: 75vh;
+  z-index: 1000;
+  box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+}
+h1{
+  color: #77DDE7;
+  font-size: 15vh;
+  font-family: monospace;
+  letter-spacing: 1vw;
+  position: absolute;
+  top: 18vh;
+  left: 42vw;
+}
+button{
+  background-color: #00D1AF;
+  border-style: double;
+  border-color: #00B2D1;
+  border-radius: 15px;
+  font-size: 3vh;
+  padding: 1vh 2vw 1vh 2vw;
+  font-weight: 600;
+  position: absolute;
+  top: 45vh;
+  left: 45.7vw;
+  transition-duration: 300;
+}
+button:hover{
+  box-shadow: inset 2px 2px 5px rgba(154, 147, 140, 0.5), 1px 1px 5px rgba(255, 255, 255, 1);
+}
