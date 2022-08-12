@@ -7,19 +7,22 @@ import "./Card.css"
 class Card extends Component {
     render() {
         let image = errorImg
-        let {color, cardName, face, size, posX, posY} = this.props
+        let {color, cardName, face, size, posX, posY, rot, z} = this.props
         let alt = `${color}_${cardName}`
         try {
             image = require(`./card-asset/${color}_${cardName}_large.png`)
         } catch (error) {
             image = errorImg
             alt = `${color}_${cardName}, not found :(`
+            console.error(`${color}_${cardName}, not found :(`)
         }
 
         let style = {
             width: size,
             top: posY + "vh",
-            left: posX + "vw"
+            left: posX + "vw",
+            transform: `rotate(${rot}deg)`,
+            zIndex: z
         }
 
 

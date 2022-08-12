@@ -3,102 +3,143 @@ import React, { Component } from 'react';
 import Card from '../Card/Card';
 
 class GameTable extends Component {
+    _botNumber = 3
+
+    _mounted = false
+
     _colors = ["yellow", "green", "blue", "red"]
 
-    mixer = array => {
-        for (let i = array.length; i; i--) {
-            let randomized = Math.floor(Math.random() * i);
-            [array[i - 1], array[randomized]] = [array[randomized], array[i - 1]];
-        }
-        return array;//here
+    _cardGroupes = {
+        colode: [],
+        player: [],
+        bots: [],
+        played: []
+    }
+
+    _colodePos = {
+        x: 55, 
+        y: 40
     }
 
     state = {
-        player: [],
-        bots: [],
-        colode: [],
-        playedCards: [],
-        gameDirection: true
+
     }
 
-    _createCard(color, cardName, size, posX, posY, face){
-        return {
-            color, 
-            cardName, 
-            size,
-            posX,
-            posY,
-            face,
-            id: color[0] + cardName[0]
+    _createCard = (color, cardName, size, posX, posY, face, addIndx = '', rot = 0, z = 1)=>{
+        this.setState({
+            [color[0] + (cardName[0] ?? cardName) + addIndx]: {
+                color,
+                cardName, 
+                size, 
+                posX,
+                posY, 
+                face,
+                id: color[0] + (cardName[0] ?? cardName) + addIndx, 
+                rot,
+                z
+            }
+        })
+        this._cardGroupes.colode.push(color[0] + (cardName[0] ?? cardName) + addIndx)
+    }
+
+    _createCards(){
+        let {_colors, _colodePos, _createCard} = this
+        for(let color in _colors){
+            for( let i = 0; i<10; i++){
+                _createCard(_colors[color], i, 150, _colodePos.x, _colodePos.y, false)
+            }
+            _createCard(_colors[color], "picker", 150, _colodePos.x, _colodePos.y, false)
+            _createCard(_colors[color], "reverse", 150, _colodePos.x, _colodePos.y, false)
+            _createCard(_colors[color], "skip", 150, _colodePos.x, _colodePos.y, false)
         }
+        for(let i = 0; i< 4; i++){
+            _createCard("wild", "colora_changer", 150, _colodePos.x, _colodePos.y, false, i)
+            _createCard("wild", "pick_four", 150, _colodePos.x, _colodePos.y, false, i)
+        }   
     }
 
     _generateColode(){
-        let colode = []
-        let count = 0
-        for(let color in this._colors){
-            for(let i = 0; i<10; i++){
-                colode.push(this._createCard(this._colors[color], i, 150, 55+count*0.2, 45+count, false))
-                count -= 0.1
-            }
-            colode.push(this._createCard(this._colors[color], "picker", 150, 55+count*0.2, 45+count, false))
-            count -= 0.1
-            colode.push(this._createCard(this._colors[color], "reverse", 150, 55+count*0.2, 45+count, false))
-            count -= 0.1
-            colode.push(this._createCard(this._colors[color], "skip", 150, 55+count*0.2, 45+count, false))
-            count -= 0.1
-        }
-        colode.push(this._createCard("wild", "colora_changer", 150, 55+count*0.2, 45+count, false))
-        count -= 0.1
-        colode.push(this._createCard("wild", "pick_four", 150, 55+count*0.2, 45+count, false))
-        count -= 0.1
-        return colode
-    }
-
-    _mixColode(){
-        this.setState(
-            ({colode}) =>{
-                return this.mixer(colode)
-                    .map((card, i)=>{
-                        card.posX = 55 + i * 0.02
-                        card.posY = 45 - i * 0.1
-                        return card
-                    })
-            }
-        )
-    }
-
-
-    _reFaceCard(id){
-        this.setState(
-            ({playedCards}) => {
-                let newPlayedCards = [...playedCards]
-                for(let card in newPlayedCards){
-                    if(card.id == id){
-                        newPlayedCards[card].face = !newPlayedCards[card].face 
-                        return {
-                            playedCards: newPlayedCards
-                        }
-                    }
-                }
-            }
-        )
-    }
-
-    componentDidMount(){
-        this.setState({colode: this._generateColode()})
+        this._createCards()
         this._mixColode()
     }
 
+    _mixColode(){
+        let colodeCopy = [...this._cardGroupes.colode]
+        let newColode = []
+
+        while (colodeCopy.length>0){
+            newColode.push(colodeCopy.splice(Math.floor(Math.random()*colodeCopy.length), 1)[0]) 
+        }
+
+        this._cardGroupes.colode = newColode
+    }
+
+    _dealCards(){
+        let {_cardGroupes: {colode}, _botNumber} = this
+        this._cardGroupes.player = colode.splice(0, 6)
+        for(let i = 0; i<_botNumber;i++){
+            this._cardGroupes.bots[i] = colode.splice(0, 6)
+        }
+
+        let {_cardGroupes: {player, bots}, _flipCard, _locateCard} = this
+        let i = 0
+        let y = 0 - player.length / 2
+        for(let card in player){
+            _flipCard(player[card], true)
+            _locateCard(player[card], 200/player.length^3*40, 10+(i*70 /player.length), 70+Math.abs(y*y/5.25), 3*y, i)
+            y++
+            i++
+        }
+    }
+
+    _locateCard = (id, size, posX, posY, rot, z)=>{
+        this.setState(
+            (state)=>{
+                let card = {...state[id]}
+                card.size = (size ?? card[size])
+                card.posX = (posX ?? card[posX])
+                card.posY = (posY ?? card[posY])
+                card.rot = (rot ?? card[rot])
+                card.z = (z ?? card[z])
+                return {
+                    [id]: card
+                }
+            }
+        )
+    }
+
+    _flipCard = (id, facing) =>{
+        this.setState(
+            (state)=>{
+                let card = {...state[id]}
+                card.face = (facing ?? !state[id])
+                return {
+                    [id]: card
+                }
+            }
+        )
+    }
+    
+    componentDidMount(){
+        if (!this._mounted){
+            this._generateColode()
+            this._dealCards()
+        }
+        this._mounted = true
+    }
+
     render() {
-        let {colode} = this.state
+        let cards = this.state
+
         return (
             <div id='game'>
                 {
-                    colode.map((element)=>{return <Card key = {element.id} {...element}/>})
+                    Object.values(cards).map((element)=>{return <Card key = {element.id} {...element}/>})
                 }
             </div>
         );
+    
+        
     }
 }
 

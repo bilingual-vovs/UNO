@@ -8,7 +8,7 @@ class App extends Component {
     render() {
         return (
             <div id='app'>
-                <GameTable/>
+                <GameTable key='main'/>
             </div>
         );
     }
