@@ -1,0 +1,13 @@
+body{
+    padding: 0;
+    margin: 0;
+}
+*{
+    transition-duration: 300ms;
+}
+#app {
+    background-color: #256D85;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+}
