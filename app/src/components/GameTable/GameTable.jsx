@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 
 import Card from '../Card/Card';
+import Alert from '../Alert/Alert';
 
 class GameTable extends Component {
     _lastZIndex = 100
@@ -23,7 +24,7 @@ class GameTable extends Component {
                     let card = bot[cardKey]
                     if (card === id) {
                         let card = this._cardGroupes.bots[botKey][cardKey]
-                        this._cardGroupes[to] = card
+                        this._cardGroupes[to].push(card)
                         this._cardGroupes.bots[botKey].splice(this._cardGroupes.bots[botKey].indexOf(card), 1)
                     }
                 }
@@ -33,7 +34,7 @@ class GameTable extends Component {
                 let card = colode[cardKey]
                 if (card === id) {
                     let card = this._cardGroupes.colode[cardKey]
-                    this._cardGroupes[to] = card
+                    this._cardGroupes[to].push(card)
                     this._cardGroupes.colode.splice(this._cardGroupes.colode.indexOf(card), 1)
                 }
             }
@@ -42,11 +43,10 @@ class GameTable extends Component {
                 let card = player[cardKey]
                 if (card === id) {
                     let card = this._cardGroupes.player[cardKey]
-                    this._cardGroupes[to] = card
+                    this._cardGroupes[to].push(card)
                     this._cardGroupes.player.splice(this._cardGroupes.player.indexOf(card), 1)
                 }
             }
-            console.log(this._cardGroupes)
         }
     }
 
@@ -116,12 +116,46 @@ class GameTable extends Component {
     }
 
     _dealCards(){
-        let {_cardGroupes: {colode}, _botNumber, _playCard: playCard} = this
-        this._cardGroupes.player = colode.splice(0, 6)
+        let {_cardGroupes: {colode}, _botNumber, _playCard: playCard, _flipCard} = this
+        this._cardGroupes.player = colode.splice(colode.length-7, 6)
         for(let i = 0; i<_botNumber;i++){
-            this._cardGroupes.bots[i] = colode.splice(0, 6)
+            this._cardGroupes.bots[i] = colode.splice(colode.length-7, 6)
         }
 
+       this._updateCardPosition()
+       _flipCard(colode[colode.length-1], true)
+        playCard(colode[colode.length-1])
+    }
+
+    _locateCard = (id, size, posX, posY, rot, z)=>{
+        this.setState(
+            (state)=>{
+                let card = {...state[id]}
+                card.size = (size ?? card[size])
+                card.posX = (posX ?? card[posX])
+                card.posY = (posY ?? card[posY])
+                card.rot = (rot ?? card[rot])
+                card.z = (z ?? card[z])
+                return {
+                    [id]: card
+                }
+            }
+        )
+    }
+
+    _flipCard = (id, facing) =>{
+        this.setState(
+            (state)=>{
+                let card = {...state[id]}
+                card.face = (facing ?? !state[id])
+                return {
+                    [id]: card
+                }
+            }
+        )
+    }
+
+    _updateCardPosition = () => {
         let {_cardGroupes: {player, bots}, _flipCard, _locateCard} = this
         let i = 0
         let y = 0 - player.length / 2
@@ -158,43 +192,29 @@ class GameTable extends Component {
             }
             botCount++
         }
-        _flipCard(colode[0], true)
-        playCard(colode[0])
+        
 
-    }
-
-    _locateCard = (id, size, posX, posY, rot, z)=>{
-        this.setState(
-            (state)=>{
-                let card = {...state[id]}
-                card.size = (size ?? card[size])
-                card.posX = (posX ?? card[posX])
-                card.posY = (posY ?? card[posY])
-                card.rot = (rot ?? card[rot])
-                card.z = (z ?? card[z])
-                return {
-                    [id]: card
-                }
-            }
-        )
-    }
-
-    _flipCard = (id, facing) =>{
-        this.setState(
-            (state)=>{
-                let card = {...state[id]}
-                card.face = (facing ?? !state[id])
-                return {
-                    [id]: card
-                }
-            }
-        )
     }
 
     _playCard = (id) =>{
         this._cardGroupes.move(id, "played")
-        this._lastZIndex++
+        this._lastZIndex += 1
         this._locateCard(id, 150, 35, 35, 0, this._lastZIndex)
+    }
+
+    playerPlayCard = (id) => {
+        console.log(id)
+        this.setState(
+            state=>{
+                let card = state[id]
+                let activeCard = state[this._cardGroupes.played[this._cardGroupes.played.length-1]]
+                if((card.color === activeCard.color || card.color === "wild" || activeCard.color === "wild" || card.cardName === activeCard.cardName) && this.isPLayers(id)){
+                    this._playCard(id)
+                    this._updateCardPosition()
+                }
+                
+            }
+        )
     }
 
     isPLayers = (id) => {
@@ -221,7 +241,7 @@ class GameTable extends Component {
         return (
             <div id='game'>
                 {
-                    Object.values(cards).map((element)=>{return <Card isPlayers={this.isPLayers} key = {element.id} {...element}/>})
+                    Object.values(cards).map((element)=>{return <Card playCard={()=>{this.playerPlayCard(element.id)}} isPlayers={this.isPLayers} key = {element.id} {...element}/>})
                 }
             </div>
         );
