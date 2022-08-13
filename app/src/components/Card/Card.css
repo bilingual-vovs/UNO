@@ -1,4 +1,7 @@
 .cards{
     position: absolute;
-    
+    border-radius: 1em;
+}
+.cards:hover{
+    box-shadow: 0em 0em 1em #2B4865;
 }

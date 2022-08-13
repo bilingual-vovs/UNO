@@ -5,9 +5,34 @@ import back from "./card-asset/card_back_large.png"
 import "./Card.css"
 
 class Card extends Component {
+
+    isPlayers = this.props.isPlayers
+
+    state = {
+        add: 0,
+        onTop: 0
+    }
+
+    _hover = () => {
+        if(this.isPlayers(this.props.id)){
+            this.setState({
+                addY: -3,
+                onTop: 1000
+            })
+        }
+    }
+    _unHover = () => {
+        if(this.isPlayers(this.props.id)){
+            this.setState({
+                addY: 0,
+                onTop: 0
+            })
+        }
+    }
+
     render() {
         let image = errorImg
-        let {color, cardName, face, size, posX, posY, rot, z} = this.props
+        let {props: {color, cardName, face, size, posX, posY, rot, z, id}, state: {addY, onTop}, _hover, _unHover} = this
         let alt = `${color}_${cardName}`
         try {
             image = require(`./card-asset/${color}_${cardName}_large.png`)
@@ -19,21 +44,20 @@ class Card extends Component {
 
         let style = {
             width: size,
-            top: posY + "vh",
+            top: posY + (addY ?? 0) + "vh",
             left: posX + "vw",
             transform: `rotate(${rot}deg)`,
-            zIndex: z
+            zIndex: Math.max(z, onTop)
         }
-
 
         if(face){
             return (
-                <img style={style} className='cards' src={image} alt={alt} />
+                <img onMouseOut={_unHover} onMouseOver={_hover} style={style} key={id} className='cards' src={image} alt={alt} />
             );
         }
         else{
             return (
-                <img style={style} className='cards' src={back} alt={"back"} />
+                <img onMouseOut={_unHover} onMouseOver={_hover} style={style} key={id} className='cards' src={back} alt={"back"} />
             );
         }
         

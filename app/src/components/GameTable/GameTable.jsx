@@ -3,6 +3,7 @@ import React, { Component } from 'react';
 import Card from '../Card/Card';
 
 class GameTable extends Component {
+    _lastZIndex = 100
     _botNumber = 3
 
     _mounted = false
@@ -13,12 +14,45 @@ class GameTable extends Component {
         colode: [],
         player: [],
         bots: [],
-        played: []
+        played: [],
+        move: (id, to) =>{
+            let {colode, bots, player} = this._cardGroupes
+            for(let botKey in bots){
+                let bot = bots[botKey]
+                for (let cardKey in bot){
+                    let card = bot[cardKey]
+                    if (card === id) {
+                        let card = this._cardGroupes.bots[botKey][cardKey]
+                        this._cardGroupes[to] = card
+                        this._cardGroupes.bots[botKey].splice(this._cardGroupes.bots[botKey].indexOf(card), 1)
+                    }
+                }
+            }
+            
+            for (let cardKey in colode){
+                let card = colode[cardKey]
+                if (card === id) {
+                    let card = this._cardGroupes.colode[cardKey]
+                    this._cardGroupes[to] = card
+                    this._cardGroupes.colode.splice(this._cardGroupes.colode.indexOf(card), 1)
+                }
+            }
+
+            for (let cardKey in player){
+                let card = player[cardKey]
+                if (card === id) {
+                    let card = this._cardGroupes.player[cardKey]
+                    this._cardGroupes[to] = card
+                    this._cardGroupes.player.splice(this._cardGroupes.player.indexOf(card), 1)
+                }
+            }
+            console.log(this._cardGroupes)
+        }
     }
 
     _colodePos = {
         x: 55, 
-        y: 40
+        y: 35
     }
 
     state = {
@@ -44,17 +78,24 @@ class GameTable extends Component {
 
     _createCards(){
         let {_colors, _colodePos, _createCard} = this
+        let cardNum = 0
         for(let color in _colors){
             for( let i = 0; i<10; i++){
-                _createCard(_colors[color], i, 150, _colodePos.x, _colodePos.y, false)
+                cardNum++
+                _createCard(_colors[color], i, 150, _colodePos.x+cardNum*0.01, _colodePos.y+cardNum*-0.1, false)
             }
-            _createCard(_colors[color], "picker", 150, _colodePos.x, _colodePos.y, false)
-            _createCard(_colors[color], "reverse", 150, _colodePos.x, _colodePos.y, false)
-            _createCard(_colors[color], "skip", 150, _colodePos.x, _colodePos.y, false)
+            cardNum++
+            _createCard(_colors[color], "picker", 150, _colodePos.x+cardNum*0.01, _colodePos.y+cardNum*-0.1, false)
+            cardNum++
+            _createCard(_colors[color], "reverse", 150, _colodePos.x+cardNum*0.01, _colodePos.y+cardNum*-0.1, false)
+            cardNum++
+            _createCard(_colors[color], "skip", 150, _colodePos.x+cardNum*0.01, _colodePos.y+cardNum*-0.1, false)
         }
         for(let i = 0; i< 4; i++){
-            _createCard("wild", "colora_changer", 150, _colodePos.x, _colodePos.y, false, i)
-            _createCard("wild", "pick_four", 150, _colodePos.x, _colodePos.y, false, i)
+            cardNum++
+            _createCard("wild", "colora_changer", 150, _colodePos.x+cardNum*0.01, _colodePos.y+cardNum*-0.1, false, i)
+            cardNum++
+            _createCard("wild", "pick_four", 150, _colodePos.x+cardNum*0.01, _colodePos.y+cardNum*-0.1, false, i)
         }   
     }
 
@@ -75,7 +116,7 @@ class GameTable extends Component {
     }
 
     _dealCards(){
-        let {_cardGroupes: {colode}, _botNumber} = this
+        let {_cardGroupes: {colode}, _botNumber, _playCard: playCard} = this
         this._cardGroupes.player = colode.splice(0, 6)
         for(let i = 0; i<_botNumber;i++){
             this._cardGroupes.bots[i] = colode.splice(0, 6)
@@ -86,10 +127,40 @@ class GameTable extends Component {
         let y = 0 - player.length / 2
         for(let card in player){
             _flipCard(player[card], true)
-            _locateCard(player[card], 200/player.length^3*40, 10+(i*70 /player.length), 70+Math.abs(y*y/5.25), 3*y, i)
+            _locateCard(player[card], 200, 10+70 /player.length/2+(i*70 /player.length), 70+Math.abs(y*y/5.25)/player.length*10, 3*y, i)
             y++
             i++
         }
+        
+
+        let botCount = 1
+        for(let bot in bots){
+            let botCrd = bots[bot]
+            i = 0
+            y = 0 - botCrd.length / 2
+            for(let card in botCrd){
+                switch (botCount) {
+                    case 1:
+                        _locateCard(botCrd[card], 120, 0-Math.abs(y*y/10),10+50 /botCrd.length/2+(i*50 /botCrd.length), 90*botCount+3*y, i)
+                    break;
+                    case 2:
+                        _locateCard(botCrd[card], 120, 20+50 /botCrd.length/2+(i*50 /botCrd.length), 0-Math.abs(y*y/5.25), 180-3*y, i)
+                    break;
+                    case 3:
+                        _locateCard(botCrd[card], 120, 93+Math.abs(y*y/10),10+50 /botCrd.length/2+(i*50 /botCrd.length), 90*botCount-3*y, i)
+                    break;
+                    default:
+
+                    break;
+                }
+                y++
+                i++
+            }
+            botCount++
+        }
+        _flipCard(colode[0], true)
+        playCard(colode[0])
+
     }
 
     _locateCard = (id, size, posX, posY, rot, z)=>{
@@ -119,6 +190,22 @@ class GameTable extends Component {
             }
         )
     }
+
+    _playCard = (id) =>{
+        this._cardGroupes.move(id, "played")
+        this._lastZIndex++
+        this._locateCard(id, 150, 35, 35, 0, this._lastZIndex)
+    }
+
+    isPLayers = (id) => {
+        let {player} = this._cardGroupes
+        if(player.indexOf(id) !== -1){
+            return true
+        }
+        else{
+            return false
+        }
+    }
     
     componentDidMount(){
         if (!this._mounted){
@@ -134,7 +221,7 @@ class GameTable extends Component {
         return (
             <div id='game'>
                 {
-                    Object.values(cards).map((element)=>{return <Card key = {element.id} {...element}/>})
+                    Object.values(cards).map((element)=>{return <Card isPlayers={this.isPLayers} key = {element.id} {...element}/>})
                 }
             </div>
         );
