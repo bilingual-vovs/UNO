@@ -7,6 +7,9 @@ class GameTable extends Component {
     _lastZIndex = 100
     _botNumber = 3
 
+    direction = true
+    nowMoving = 0
+
     _mounted = false
 
     _colors = ["yellow", "green", "blue", "red"]
@@ -49,11 +52,13 @@ class GameTable extends Component {
             }
         }
     }
+    players = [this._cardGroupes.player]
 
     _colodePos = {
         x: 55, 
         y: 35
     }
+
 
     state = {
 
@@ -199,24 +204,89 @@ class GameTable extends Component {
     _playCard = (id) =>{
         this._cardGroupes.move(id, "played")
         this._lastZIndex += 1
+        this._flipCard(id, true)
         this._locateCard(id, 150, 35, 35, 0, this._lastZIndex)
+        this._updateCardPosition()
+    }
+    
+    takeCard = () => {
+        let player = this.nowMoving
+        let card = this._cardGroupes.colode.shift()
+        if (player === 0){
+            this._flipCard(card, true)
+            this._cardGroupes.player.push(card)
+        }
+        else{
+            this._flipCard(card, false)
+            this._cardGroupes.bots[player-1].push(card)
+        }
+        this._updateCardPosition()
     }
 
     playerPlayCard = (id) => {
+
         this.setState(
             state=>{
                 let card = state[id]
                 let activeCard = state[this._cardGroupes.played[this._cardGroupes.played.length-1]]
-                if((card.color === activeCard.color || card.color === "wild" || activeCard.color === "wild" || card.cardName === activeCard.cardName) && this.isPLayers(id)){
+                if((card.color === activeCard.color || card.color === "wild" || activeCard.color === "wild" || card.cardName === activeCard.cardName) && this.isPLayers(id) && this.nowMoving === 0){
                     this._playCard(id)
-                    this._updateCardPosition()
+                    if (id[0] !== "w"){
+                        this.nextMove()
+                    }
+                    
                 }
-                else{
+                else if (this.isPLayers(id)){
                     this.props.cardAlert()
                 }
                                                                                                                                              
             }
         )
+    }
+
+    botMove = () => {
+        let id = this.nowMoving-1
+        let {_cardGroupes: {bots, played}, _playCard: playCard, takeCard} = this
+        let bot = bots[id]
+        let active = played[played.length-1]
+        let beforeActive = played[played.length-2]
+        let movementFinished, oneCardHasBeenTaken = false
+
+        if (active[1] === "p"){
+            takeCard()
+            takeCard()
+        }
+        if (active.slice(0,2) === "wp" || beforeActive.slice(0,2) === "wp"){
+            takeCard()
+            takeCard()
+            takeCard()
+            takeCard()
+        }
+
+        if (active[1] === "s"){
+            this.nextMove()
+        }else{
+        let a = setInterval(()=>{
+            
+            let card = bot.find((elm)=>elm[0] === active[0] || elm[1] === active[1] || active[0] === 'w' )
+            setTimeout(()=>{})
+            if  (card){
+                playCard(card)
+                if ((card[0] !== "w" && card[1] !== "r")){
+                    movementFinished = true
+                }
+            }
+            else{
+                takeCard()
+                oneCardHasBeenTaken = true
+            }
+            if((oneCardHasBeenTaken || movementFinished)){
+                clearInterval(a)
+                this.nextMove()
+            }
+        }, 600)
+        }
+
     }
 
     isPLayers = (id) => {
@@ -226,6 +296,85 @@ class GameTable extends Component {
         }
         else{
             return false
+        }
+    }
+
+    isWining = () => {
+        let player = this.nowMoving
+        if (player){
+            
+        }
+    }
+
+    playerMove = () => {
+        let {_cardGroupes: {player, played}, takeCard,nextMove} = this
+        let beforeActive = played[played.length-2]
+        let active = played[played.length-1]
+        let cardTaken = false
+        let card = player.find((elm)=>elm[0] === active[0] || elm[1] === active[1] || elm[0] === 'w'  || active[0] === 'w' )
+        if (active[1] === "p"){
+            takeCard()
+            takeCard()
+        }
+        if (active.slice(0,2) === "wp" || beforeActive.slice(0,2) === "wp"){
+            takeCard()
+            takeCard()
+            takeCard()
+            takeCard()
+        }
+        
+        if  (!card){
+            takeCard()
+            if (cardTaken){
+                nextMove()
+            }
+            cardTaken = true
+            
+        }else if (card[1] === "s"){
+            nextMove()
+        }
+
+    }
+
+    nextMove = () => {
+        if (this._cardGroupes.played[this._cardGroupes.played.length-1][1] === "r"){
+            this.direction = !this.direction
+            if (this.direction){
+                this.nowMoving--
+            }
+            else {
+                this.nowMoving++
+            }
+        }
+        
+        if (this.direction){
+            switch (this.nowMoving) {
+                case this._botNumber:
+                    this.nowMoving = 0
+                break;
+                default:
+                    this.nowMoving++
+                break;
+            }
+        }
+        else{
+            switch (this.nowMoving) {
+                case 0:
+                    this.nowMoving = 3
+                break;
+                default:
+                    this.nowMoving--
+                break;
+            }
+        }
+        if (this.nowMoving !== 0){
+            setTimeout(()=>{
+                this.botMove()
+            }, 700)
+            
+        }
+        else{
+            this.playerMove()
         }
     }
 

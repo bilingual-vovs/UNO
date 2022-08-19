@@ -14,7 +14,6 @@ class App extends Component {
     _unmountAlert(alert){
         clearInterval(this.alertIds[alert])
         this.setState({[alert]: false})
-        console.log(this.state)
     }
     cardAlertPlay = ()=>{
         this._unmountAlert("cardalert")
