@@ -147,7 +147,7 @@ class GameTable extends Component {
         this.setState(
             (state)=>{
                 let card = {...state[id]}
-                card.face = (facing ?? !state[id])
+                card.face = (facing ?? !card.face)
                 return {
                     [id]: card
                 }
@@ -203,7 +203,6 @@ class GameTable extends Component {
     }
 
     playerPlayCard = (id) => {
-        console.log(id)
         this.setState(
             state=>{
                 let card = state[id]
@@ -212,7 +211,10 @@ class GameTable extends Component {
                     this._playCard(id)
                     this._updateCardPosition()
                 }
-                
+                else{
+                    this.props.cardAlert()
+                }
+                                                                                                                                             
             }
         )
     }
@@ -225,6 +227,10 @@ class GameTable extends Component {
         else{
             return false
         }
+    }
+
+    _startGame = () => {
+        
     }
     
     componentDidMount(){

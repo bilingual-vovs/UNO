@@ -1,5 +1,7 @@
 import React, { Component } from 'react';
 
+import "./Alert.css"
+
 class Alert extends Component {
     componentDidMount(){
         setTimeout(this.props.delete)
@@ -7,7 +9,8 @@ class Alert extends Component {
     render() {
         return (
             <div id='alert'>
-                <h1>You can NOT play this card</h1>
+                <h1>{this.props.text}</h1>
+                <button>Ok</button>
             </div>
         );
     }

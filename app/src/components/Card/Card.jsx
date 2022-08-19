@@ -52,12 +52,12 @@ class Card extends Component {
 
         if(face){
             return (
-                <img onClick={()=>{this.props.playCard(); _unHover()}} onMouseOut={_unHover} onMouseOver={_hover} style={style} key={id} className='cards' src={image} alt={alt} />
+                <img onClick={()=>{this.props.playCard(); _unHover()}}  onMouseOut={_unHover} onMouseOver={_hover} style={style} key={id} className='cards' src={image} alt={alt} />
             );
         }
         else{
             return (
-                <img onClick={()=>{this.props.playCard(); _unHover()}} onMouseOut={_unHover} onMouseOver={_hover} style={style} key={id} className='cards' src={back} alt={"back"} />
+                <img onClick={()=>{this.props.playCard(); _unHover()}}  onMouseOut={_unHover} onMouseOver={_hover} style={style} key={id} className='cards' src={back} alt={"back"} />
             );
         }
         

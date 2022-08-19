@@ -1,0 +1,29 @@
+#alert{
+    background-color: #002b5b;
+    border-radius: 10px;
+    border: solid #2B4865;
+    color: #8FE3CF;
+    position: absolute;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    top: 40vh;
+    left: 35vw;
+    width: 30vw;
+    height: 20vh;
+    font-size: 1em;
+    z-index: 999;
+    padding: 0;
+    box-shadow: 0 0 1em red;
+}
+#alert button{
+    background-color: #8FE3CF;
+    border-radius: 10px;
+    border: solid #2B4865;
+    color: #002B5B;
+    margin: 0;
+    font-size: 1.5em;
+    padding: 0.3em;
+    padding-left: 0.5vw;
+    padding-right: 0.5vw;
+}
