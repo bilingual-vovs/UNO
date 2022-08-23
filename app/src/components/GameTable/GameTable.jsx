@@ -19,6 +19,7 @@ class GameTable extends Component {
         player: [],
         bots: [],
         played: [],
+        active: [],
         move: (id, to) =>{
             let {colode, bots, player} = this._cardGroupes
             for(let botKey in bots){
@@ -52,6 +53,8 @@ class GameTable extends Component {
             }
         }
     }
+    _newActive = []
+    _stopAction = 0
     players = [this._cardGroupes.player]
 
     _colodePos = {
@@ -121,7 +124,7 @@ class GameTable extends Component {
     }
 
     _dealCards(){
-        let {_cardGroupes: {colode}, _botNumber, _playCard: playCard, _flipCard} = this
+        let {_cardGroupes: {colode}, _botNumber, _playCard: playCard, _flipCard, _changeActive: changeActive} = this
         this._cardGroupes.player = colode.splice(colode.length-7, 6)
         for(let i = 0; i<_botNumber;i++){
             this._cardGroupes.bots[i] = colode.splice(colode.length-7, 6)
@@ -130,6 +133,7 @@ class GameTable extends Component {
        this._updateCardPosition()
        _flipCard(colode[colode.length-1], true)
         playCard(colode[colode.length-1])
+        changeActive()
     }
 
     _locateCard = (id, size, posX, posY, rot, z)=>{
@@ -207,8 +211,18 @@ class GameTable extends Component {
         this._flipCard(id, true)
         this._locateCard(id, 150, 35, 35, 0, this._lastZIndex)
         this._updateCardPosition()
+        this._newActive.push(id)
+        if (id[1] === 's') this._stopAction++
+    }
+
+    _changeActive = () => {
+        this._cardGroupes.active = this._newActive
+        console.log(this._newActive)
+        console.log(this._cardGroupes.active);
+        this._newActive = []
     }
     
+
     takeCard = () => {
         let player = this.nowMoving
         let card = this._cardGroupes.colode.shift()
@@ -223,47 +237,43 @@ class GameTable extends Component {
         this._updateCardPosition()
     }
 
-    playerPlayCard = (id) => {
-
-        this.setState(
-            state=>{
-                let card = state[id]
-                let activeCard = state[this._cardGroupes.played[this._cardGroupes.played.length-1]]
-                if((card.color === activeCard.color || card.color === "wild" || activeCard.color === "wild" || card.cardName === activeCard.cardName) && this.isPLayers(id) && this.nowMoving === 0){
-                    this._playCard(id)
-                    if (id[0] !== "w"){
-                        this.nextMove()
-                    }
-                    
-                }
-                else if (this.isPLayers(id)){
-                    this.props.cardAlert()
-                }
-                                                                                                                                             
+    playerPlayCard = (card) => {
+        let {isPLayers, _cardGroupes: {active}, nowMoving, props: {cardAlert}} = this
+        let activeCard = active[active.length-1]
+        if(isPLayers(card) && nowMoving === 0 && (card[0] === activeCard[0] || card[1] === activeCard[1] || card[0] === "w" || activeCard[0] === "w" || this._newActive[this._newActive.length - 1][0] === "w")){
+            this._playCard(card)
+            if (card[0] !== "w"){
+                this._changeActive()
+                this.nextMove()
             }
-        )
+        }
+        else {
+            cardAlert()
+        }
     }
 
     botMove = () => {
         let id = this.nowMoving-1
-        let {_cardGroupes: {bots, played}, _playCard: playCard, takeCard} = this
+        let {_cardGroupes: {bots, active: activeArr}, _playCard: playCard, takeCard, _stopAction} = this
         let bot = bots[id]
-        let active = played[played.length-1]
-        let beforeActive = played[played.length-2]
+        let active = activeArr[activeArr.length-1]
         let movementFinished, oneCardHasBeenTaken = false
 
-        if (active[1] === "p"){
-            takeCard()
-            takeCard()
-        }
-        if (active.slice(0,2) === "wp" || beforeActive.slice(0,2) === "wp"){
-            takeCard()
-            takeCard()
-            takeCard()
-            takeCard()
-        }
+        // if (active[1] === "p"){
+        //     takeCard()
+        //     takeCard()
+        // }
+        // if (active.slice(0,2) === "wp" || beforeActive.slice(0,2) === "wp"){
+        //     takeCard()
+        //     takeCard()
+        //     takeCard()
+        //     takeCard()
+        // }
+        
 
-        if (active[1] === "s"){
+        if (_stopAction > 0){
+            this._cardGroupes.active = [this._cardGroupes.active[this._cardGroupes.active.length - 1]]
+            this._stopAction -= 1
             this.nextMove()
         }else{
         let a = setInterval(()=>{
@@ -282,6 +292,7 @@ class GameTable extends Component {
             }
             if((oneCardHasBeenTaken || movementFinished)){
                 clearInterval(a)
+                if (movementFinished)   this._changeActive()
                 this.nextMove()
             }
         }, 600)
@@ -307,21 +318,21 @@ class GameTable extends Component {
     }
 
     playerMove = () => {
-        let {_cardGroupes: {player, played}, takeCard,nextMove} = this
+        let {_cardGroupes: {player, played}, takeCard,nextMove, _stopAction} = this
         let beforeActive = played[played.length-2]
         let active = played[played.length-1]
         let cardTaken = false
         let card = player.find((elm)=>elm[0] === active[0] || elm[1] === active[1] || elm[0] === 'w'  || active[0] === 'w' )
-        if (active[1] === "p"){
-            takeCard()
-            takeCard()
-        }
-        if (active.slice(0,2) === "wp" || beforeActive.slice(0,2) === "wp"){
-            takeCard()
-            takeCard()
-            takeCard()
-            takeCard()
-        }
+        // if (active[1] === "p"){
+        //     takeCard()
+        //     takeCard()
+        // }
+        // if (active.slice(0,2) === "wp" || beforeActive.slice(0,2) === "wp"){
+        //     takeCard()
+        //     takeCard()
+        //     takeCard()
+        //     takeCard()
+        // }
         
         if  (!card){
             takeCard()
@@ -329,23 +340,17 @@ class GameTable extends Component {
                 nextMove()
             }
             cardTaken = true
-            
-        }else if (card[1] === "s"){
+            nextMove()
+        }else if (_stopAction > 0){
+            this._cardGroupes.active = [this._cardGroupes.active[this._cardGroupes.active.length - 1]]
+            this._stopAction -= 1
             nextMove()
         }
 
     }
 
     nextMove = () => {
-        if (this._cardGroupes.played[this._cardGroupes.played.length-1][1] === "r"){
-            this.direction = !this.direction
-            if (this.direction){
-                this.nowMoving--
-            }
-            else {
-                this.nowMoving++
-            }
-        }
+        
         
         if (this.direction){
             switch (this.nowMoving) {
