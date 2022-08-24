@@ -4,6 +4,8 @@ import Card from '../Card/Card';
 import Alert from '../Alert/Alert';
 
 class GameTable extends Component {
+    winners = []
+
     _lastZIndex = 100
     _botNumber = 3
 
@@ -318,13 +320,6 @@ class GameTable extends Component {
         }
     }
 
-    isWining = () => {
-        let player = this.nowMoving
-        if (player){
-            
-        }
-    }
-
     playerMove = () => {
         let {_cardGroupes: {active: activeArr, player}, takeCard, nextMove, _stopAction} = this
         let active = activeArr[activeArr.length-1]
@@ -360,8 +355,14 @@ class GameTable extends Component {
     }
 
     nextMove = () => {
-        
-        
+        this.isWinner()
+
+        if (this._cardGroupes.colode.length < 5){
+            this._cardGroupes.colode = this._cardGroupes.played
+            this._mixColode()
+            this._cardGroupes.played = []
+        }
+
         if (this.direction){
             switch (this.nowMoving) {
                 case this._botNumber:
@@ -393,6 +394,17 @@ class GameTable extends Component {
         }
     }
 
+    isWinner = () => {
+        let {_cardGroupes: {player, bots}, nowMoving: id} = this
+
+        if (id === 0) {
+            if (player.length === 0) this.winners.push(id)
+        }
+        else if (bots[id-1].length === 0){
+            this.winners.push(id)
+        }
+    }
+
     _startGame = () => {
         
     }
@@ -401,6 +413,7 @@ class GameTable extends Component {
         if (!this._mounted){
             this._generateColode()
             this._dealCards()
+            this.playerMove()
         }
         this._mounted = true
     }
