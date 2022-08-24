@@ -62,7 +62,6 @@ class GameTable extends Component {
         y: 35
     }
 
-
     state = {
 
     }
@@ -213,12 +212,11 @@ class GameTable extends Component {
         this._updateCardPosition()
         this._newActive.push(id)
         if (id[1] === 's') this._stopAction++
+        if (id[1] === "r") this.direction = !this.direction
     }
 
     _changeActive = () => {
         this._cardGroupes.active = this._newActive
-        console.log(this._newActive)
-        console.log(this._cardGroupes.active);
         this._newActive = []
     }
     
@@ -238,18 +236,26 @@ class GameTable extends Component {
     }
 
     playerPlayCard = (card) => {
-        let {isPLayers, _cardGroupes: {active}, nowMoving, props: {cardAlert}} = this
+        let {isPLayers, _cardGroupes: {active, player}, nowMoving, props: {cardAlert}, nextMove, takeCard} = this
         let activeCard = active[active.length-1]
+
+        let posibility = player.find((elm)=>elm[0] === active[0] || elm[1] === active[1] || elm[0] === 'w'  || active[0] === 'w' )
+
         if(isPLayers(card) && nowMoving === 0 && (card[0] === activeCard[0] || card[1] === activeCard[1] || card[0] === "w" || activeCard[0] === "w" || this._newActive[this._newActive.length - 1][0] === "w")){
             this._playCard(card)
-            if (card[0] !== "w"){
+            if (card[0] !== "w" && card[1] !== "r"){
                 this._changeActive()
-                this.nextMove()
+                nextMove()
+            } else if (!posibility) {
+                takeCard()
+                nextMove()
             }
         }
         else {
             cardAlert()
         }
+        
+        
     }
 
     botMove = () => {
@@ -259,17 +265,19 @@ class GameTable extends Component {
         let active = activeArr[activeArr.length-1]
         let movementFinished, oneCardHasBeenTaken = false
 
-        // if (active[1] === "p"){
-        //     takeCard()
-        //     takeCard()
-        // }
-        // if (active.slice(0,2) === "wp" || beforeActive.slice(0,2) === "wp"){
-        //     takeCard()
-        //     takeCard()
-        //     takeCard()
-        //     takeCard()
-        // }
+        let cardsToTake = 0
+        activeArr.forEach((elm)=>{
+            if (elm.slice(0, 2) === "wp"){
+                cardsToTake += 4
+            }
+            else if (elm[1] === "p"){
+                cardsToTake += 2
+            }
+        })
         
+        for(let i = 0; i<cardsToTake;i++){
+            takeCard()
+        }
 
         if (_stopAction > 0){
             this._cardGroupes.active = [this._cardGroupes.active[this._cardGroupes.active.length - 1]]
@@ -318,34 +326,36 @@ class GameTable extends Component {
     }
 
     playerMove = () => {
-        let {_cardGroupes: {player, played}, takeCard,nextMove, _stopAction} = this
-        let beforeActive = played[played.length-2]
-        let active = played[played.length-1]
-        let cardTaken = false
-        let card = player.find((elm)=>elm[0] === active[0] || elm[1] === active[1] || elm[0] === 'w'  || active[0] === 'w' )
-        // if (active[1] === "p"){
-        //     takeCard()
-        //     takeCard()
-        // }
-        // if (active.slice(0,2) === "wp" || beforeActive.slice(0,2) === "wp"){
-        //     takeCard()
-        //     takeCard()
-        //     takeCard()
-        //     takeCard()
-        // }
-        
-        if  (!card){
-            takeCard()
-            if (cardTaken){
-                nextMove()
+        let {_cardGroupes: {active: activeArr, player}, takeCard, nextMove, _stopAction} = this
+        let active = activeArr[activeArr.length-1]
+
+
+        let cardsToTake = 0
+        activeArr.forEach((elm)=>{
+            if (elm.slice(0, 2) === "wp"){
+                cardsToTake += 4
             }
-            cardTaken = true
-            nextMove()
-        }else if (_stopAction > 0){
+            else if (elm[1] === "p"){
+                cardsToTake += 2
+            }
+        })
+
+        let posibility = player.find((elm)=>elm[0] === active[0] || elm[1] === active[1] || elm[0] === 'w'  || active[0] === 'w' )
+        
+        for(let i = 0; i<cardsToTake;i++){
+            takeCard()
+        }
+        if (_stopAction> 0) {
+            _stopAction-- 
             this._cardGroupes.active = [this._cardGroupes.active[this._cardGroupes.active.length - 1]]
-            this._stopAction -= 1
             nextMove()
         }
+        else if (! posibility){
+            takeCard()
+            this._cardGroupes.active = [this._cardGroupes.active[this._cardGroupes.active.length - 1]]
+            nextMove()
+        }
+
 
     }
 
