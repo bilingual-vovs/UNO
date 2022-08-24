@@ -108,6 +108,17 @@ class GameTable extends Component {
         }   
     }
 
+    _normalizeColode = () => {
+        let {_cardGroupes: {colode, active}, _locateCard, _colodePos: {x, y}, _flipCard, _playCard} = this
+        let i = colode.length +1
+        for (let card in colode){
+            i--
+            _locateCard(colode[card], 150, x+i*0.01, y+i*-0.1, false, i)
+            _flipCard(colode[card], false)
+        }
+        _playCard(active[active.length-1])
+    }
+
     _generateColode(){
         this._createCards()
         this._mixColode()
@@ -137,7 +148,7 @@ class GameTable extends Component {
         changeActive()
     }
 
-    _locateCard = (id, size, posX, posY, rot, z)=>{
+    _locateCard = (id, size, posX, posY, rot, z, face)=>{
         this.setState(
             (state)=>{
                 let card = {...state[id]}
@@ -234,6 +245,14 @@ class GameTable extends Component {
             this._flipCard(card, false)
             this._cardGroupes.bots[player-1].push(card)
         }
+
+        if (this._cardGroupes.colode.length < 5){
+            this._cardGroupes.colode = this._cardGroupes.played
+            this._mixColode()
+            this._cardGroupes.played = []
+            this._normalizeColode()
+        }
+
         this._updateCardPosition()
     }
 
@@ -357,12 +376,6 @@ class GameTable extends Component {
     nextMove = () => {
         this.isWinner()
 
-        if (this._cardGroupes.colode.length < 5){
-            this._cardGroupes.colode = this._cardGroupes.played
-            this._mixColode()
-            this._cardGroupes.played = []
-        }
-
         if (this.direction){
             switch (this.nowMoving) {
                 case this._botNumber:
@@ -414,6 +427,7 @@ class GameTable extends Component {
             this._generateColode()
             this._dealCards()
             this.playerMove()
+            this._normalizeColode()
         }
         this._mounted = true
     }
