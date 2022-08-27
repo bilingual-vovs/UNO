@@ -260,14 +260,15 @@ class GameTable extends Component {
         let {isPLayers, _cardGroupes: {active, player}, nowMoving, props: {cardAlert}, nextMove, takeCard} = this
         let activeCard = active[active.length-1]
 
-        let posibility = player.find((elm)=>elm[0] === active[0] || elm[1] === active[1] || elm[0] === 'w'  || active[0] === 'w' )
-
-        if(isPLayers(card) && nowMoving === 0 && (card[0] === activeCard[0] || card[1] === activeCard[1] || card[0] === "w" || activeCard[0] === "w" || this._newActive[this._newActive.length - 1][0] === "w")){
+        let posibility 
+        if(isPLayers(card) && nowMoving === 0 && card && activeCard &&(card[0] === activeCard[0] || card[1] === activeCard[1] || card[0] === "w" || activeCard[0] === "w" || this._newActive[this._newActive.length - 1][0] === "w")){
             this._playCard(card)
+            posibility = player.find((elm)=>elm[0] === activeCard[0] || elm[1] === activeCard[1] || elm[0] === 'w'  || activeCard[0] === 'w' )
             if (card[0] !== "w" && card[1] !== "r"){
                 this._changeActive()
                 nextMove()
-            } else if (!posibility) {
+            } else if (posibility === undefined) {
+                console.log(posibility)
                 takeCard()
                 nextMove()
             }
@@ -374,7 +375,8 @@ class GameTable extends Component {
     }
 
     nextMove = () => {
-        this.isWinner()
+        
+        
 
         if (this.direction){
             switch (this.nowMoving) {
@@ -396,15 +398,23 @@ class GameTable extends Component {
                 break;
             }
         }
-        if (this.nowMoving !== 0){
+        if (this.winners.indexOf(this.nowMoving) !== -1) {
+            console.log(this.winners);
+            this.nextMove()
+        }
+        else if (this.nowMoving !== 0){
+            this.isWinner()
             setTimeout(()=>{
                 this.botMove()
             }, 700)
             
         }
         else{
+            this.isWinner()
             this.playerMove()
         }
+
+        
     }
 
     isWinner = () => {
@@ -418,9 +428,6 @@ class GameTable extends Component {
         }
     }
 
-    _startGame = () => {
-        
-    }
     
     componentDidMount(){
         if (!this._mounted){
